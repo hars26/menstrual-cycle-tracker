@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Menstrual Cycle Tracker">
+    <meta name="author" content="TemplateMo">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+
+    <title>Dashboard - Menstrual Cycle Tracker</title>
+
+    <!-- Additional CSS Files -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/templatemo-lava.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/owl-carousel.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+    <!-- ***** Preloader Start ***** -->
+    <div id="preloader">
+        <div class="jumper">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+    <!-- ***** Preloader End ***** -->
+
+    <!-- ***** Header Area Start ***** -->
+    <header class="header-area header-sticky">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <nav class="main-nav">
+                        <a href="{{ url_for('index') }}" class="logo">PinkCycle</a>
+                        <ul class="nav">
+                            <li class="scroll-to-section"><a href="index.html" class="menu-item">Home</a></li>
+                            <li class="scroll-to-section"><a href="register.html" class="menu-item">Register</a></li>
+                            <li class="scroll-to-section"><a href="login.html" class="menu-item">Log In</a></li>
+                            <li class="scroll-to-section"><a href="#" class="menu-item" onclick="confirmLogout()">Logout</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- ***** Header Area End ***** -->
+    <br> <br>
+    <div class="container mt-5">
+        <h1>Welcome, {{ username }}!</h1>
+
+        <h2>Predicted Hormone Levels</h2>
+        {% if estrogen is not none and progesterone is not none %}
+            <p>Estrogen Level: {{ estrogen | round(2) }}</p>
+            <p>Progesterone Level: {{ progesterone | round(2) }}</p>
+        {% else %}
+            <p>No hormone levels calculated yet.</p>
+        {% endif %}
+
+        <h2>Cycle Predictions</h2>
+        {% if next_period_start %}
+            <p>Next Period Start Date: {{ next_period_start.strftime('%Y-%m-%d') }}</p>
+
+            {% set next_period_date = next_period_start.date() %}
+            {% set today_date = today %}
+
+            {% if next_period_date == today_date %}
+                <div class="flash-message warning">
+                    ⚠️ Your period is expected to start today!
+                </div>
+            {% elif next_period_date < today_date %}
+                <div class="flash-message warning">
+                    🛑 Your period seems to be delayed! Here are some tips:
+                    <ul>
+                        <li>Stay hydrated and maintain a balanced diet.</li>
+                        <li>Consider tracking stress levels; stress can impact your cycle.</li>
+                        <li>Consult with a healthcare provider if the delay persists.</li>
+                    </ul>
+                </div>
+            {% elif (next_period_date - today_date).days <= 3 %}
+                <div class="flash-message warning">
+                    ⚠️ Your next period is approaching soon! Please be prepared.
+                </div>
+            {% endif %}
+        {% else %}
+            <p>No cycle predictions available.</p>
+        {% endif %}
+
+        {% if plot_url %}
+            <h2>Hormone Level Plot</h2>
+            <img src="data:image/png;base64,{{ plot_url }}" alt="Hormone Level Plot" class="img-fluid">
+        {% endif %}
+        <div>
+            <h2>Ovulation Phase Prediction</h2>
+            {% if ovulation_info %}
+                <p>Ovulation Day: {{ ovulation_info['ovulation_day'] }}</p>
+                <p>Ovulation Window: Days {{ ovulation_info['ovulation_window'][0] }} - {{ ovulation_info['ovulation_window'][1] }}</p>
+                <h3>Peak Estrogen Levels During Ovulation Window</h3>
+                <ul>
+                    {% for level in ovulation_info['peak_estrogen_levels'] %}
+                        <li>Estrogen Level: {{ level|round(2) }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Ovulation data not available. Please enter your cycle details.</p>
+            {% endif %}
+        </div>
+        <div>
+            <h2>Current Phase of Your Menstrual Cycle</h2>
+            {% if current_phase %}
+                <p><strong>Current Phase:</strong> {{ current_phase }}</p>
+            {% else %}
+                <p>Phase data not available. Please enter your cycle details.</p>
+            {% endif %}
+        </div>
+                
+        
+        <form method="POST" class="mt-4">
+            <div class="form-group">
+                <label for="last_period_start">Last Period Start Date:</label>
+                <input type="date" name="last_period_start" class="form-control" 
+                       value="{{ last_period_start if last_period_start else '' }}" required>
+            </div>
+        
+            <div class="form-group">
+                <label for="cycle_length">Cycle Length (days):</label>
+                <input type="number" name="cycle_length" min="21" max="35" class="form-control" 
+                       value="{{ cycle_length if cycle_length else '' }}" required>
+            </div>
+        
+            <div class="form-group">
+                <label for="day">Current Day in Cycle:</label>
+                <input type="number" name="day" min="1" max="35" class="form-control" 
+                       value="{{ day if day else '' }}" required>
+            </div>
+        
+            <button type="submit" class="btn btn-primary">Predict</button>
+        </form>
+    </div>
+
+    <!-- Logout Confirmation Popup -->
+    <script>
+        function confirmLogout() {
+            if (confirm("Are you sure you want to log out?")) {
+                window.location.href = "{{ url_for('logout') }}";  // Redirect to the logout route
+            }
+        }
+    </script>
+
+    <!-- jQuery -->
+    <script src="{{ url_for('static', filename='js/jquery-2.1.0.min.js') }}"></script>
+
+    <!-- Bootstrap -->
+    <script src="{{ url_for('static', filename='js/popper.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+    <!-- Plugins -->
+    <script src="{{ url_for('static', filename='js/owl-carousel.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/scrollreveal.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/waypoints.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.counterup.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/imgfix.min.js') }}"></script>
+
+    <!-- Global Init -->
+    <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+
+</body>
+</html>
