@@ -5,28 +5,6 @@ This web app helps users track their menstrual cycle, view hormone levels, ovula
 
 ---
 
-## 🗂️ Project Structure
-menstrual-cycle-tracker/
-│
-├── static/
-│ ├── css/
-│ ├── js/
-│ ├── index.html
-│ ├── login.html
-│ ├── register.html
-│ ├── dashboard.html
-│
-├── templates/
-│ └── (optional, if using Jinja2 templates)
-│
-├── app.py
-├── config.py
-├── requirements.txt
-├── .gitignore
-└── README.md
-
----
-
 ## ✨ Features
 
 - ✅ **User Registration & Login**
